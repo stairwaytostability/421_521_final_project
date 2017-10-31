@@ -2,8 +2,7 @@
 Rice BIOE 421/521 Final Project
 
 
-Brainstorming
-#A 21st Century Morning via Raspberry Pi
+## Brainstorming - A 21st Century Morning via Raspberry Pi
 
 As college students, waking up can be one of the most arduous tasks of the day. 
 We plan to design a programmable alarm clock that will incorporate at least two of the following hardware components: 
