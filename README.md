@@ -1,6 +1,8 @@
 # 421_521_final_project
 Rice BIOE 421/521 Final Project
 
+
+Brainstorming
 #A 21st Century Morning via Raspberry Pi
 
 As college students, waking up can be one of the most arduous tasks of the day. 
@@ -13,3 +15,6 @@ Alternatively, we are thinking about connecting our Arduino to a small pocket pr
 
 We plan to start with the lightbulb, then move to the speaker, and then make a decision on whether the blinds or projector would be a better element of complexity. 
 oth options are particularly cool because they expand upon tasks that voice assistants such as Google Home and Amazon Echo cannot currently perform. 
+
+
+Abstract
