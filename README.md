@@ -17,3 +17,8 @@ oth options are particularly cool because they expand upon tasks that voice assi
 
 
 ## Abstract
+Waking up for morning classes or meetings is especially challenging for college students.  A traditional alarm is sometimes not enough to wake students, and they sleep through important commitments.  However, waking up to an important message, email, or interesting news story provides greater stimulation and motivation to get out of bed. There is a need for a more engaging alarm clock system with a wider breadth of capabilities that will allow users to personalize their morning routine.
+
+We are developing a novel alarm clock system with modern capabilities using Raspberry Pi and Arduino. Firstly, our system will include a Wifi-enabled RGB smart lightbulb that will allow the user to select a color of their choice.  At the time of the alarm, the lightbulb will gradually brighten and wake the user.  In addition, the alarm clock will have Bluetooth capabilities to hook up to a user’s Bluetooth speaker and play a song of their choice as the auditory component. We will also incorporate a pocket projector to automatically provide the user with a display of the weather, news, or other relevant information to start their day.
+
+Lastly, we will add a layer of complexity to turning off the alarm in order to ensure that the user is fully aware of their decision to shut it off. This will include a few simple math problems that require a level of cognition not possible for users who are still half asleep. The alarm clock will include a number pad input for the user to enter their answers. 
