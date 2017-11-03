@@ -18,7 +18,7 @@ def my_range(start, end, step):
 execfile("/home/pi/lights/nmap-equipment.py")
 
 
-# CHOOSE WHICH LIGHTS TO USE HERE
+# CHOOSE WHICH LIGHTS TO USE HERE - this comes from the nmap file execution
 theLights = BedroomLights
 #theLights = FrontRoomLights
 theLightsString = " ".join(theLights)
@@ -34,15 +34,38 @@ numSteps = int(stopAt/stepSize)
 print "there are '" + str(numSteps) + "' steps over " + str(totalMin*60) + " seconds."
 delay = int(totalMin*60/numSteps)
 print "So the delay should be " + str(delay)
-print "Which gives us a " + str(delay*numSteps) + " second wakeup"
+print "Which gives us a " + str(delay*numSteps) + " second wakeup" #how long the whole process takes
 
-if delay == 0:
+if delay == 0: #because int is a floor function and could be 0
     delay = 0.5
 
-theCommand = "/usr/local/bin/flux_led " + theLightsString + " --off"
+theCommand = "/usr/local/bin/flux_led " + theLightsString + " --off" #all the ip addresses, turn the lights off?
 print theCommand
-os.system(theCommand)
+os.system(theCommand) #is this what runs the command? the OS? is it running on command line?
 time.sleep(5)
+
+
+
+
+#put some code for color etc once we get the bulb we can look up the command set for it 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 for currentBrightness in my_range(startAt, stopAt, stepSize):
     #Don't use brightness value of 0, but 0 is better for counting. So use this workaround
