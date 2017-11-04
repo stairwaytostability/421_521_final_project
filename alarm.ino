@@ -1,14 +1,22 @@
+
+
 // include the library code:
 #include <LiquidCrystal.h>
+#include <Time.h>
+#include <TimeLib.h>
+
+#define TIME_MSG_LEN  11   // time sync to PC is HEADER followed by unix time_t as ten ascii digits
+#define TIME_HEADER  'T'   // Header tag for serial time sync message
+#define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
+
 
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
-
-int ahour01;
-int ahour10;
-int aminute01;
-int aminute10;
+int ahour01 = 0;
+int ahour10 = 0;
+int aminute01 = 0;
+int aminute10 = 0;
 int ahour01pos = 9;
 int ahour10pos = 8;
 int aminute01pos = 12;
@@ -17,56 +25,47 @@ int aminute10pos = 11;
 int select;
 String digits;
 
-//  if(voltage > 890 && voltage < 910){
-//    Decrement();
-//  }
-//  if(voltage > 840 && voltage < 860){
-//    MoveCursorLeft();
-//  }
-//  if(voltage > 800 && voltage < 830){
-//    MoveCursorRight();
-//  }
-
-
 void setup() {
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
   // turn on the cursor:
   lcd.cursor();
   lcd.setCursor(0, 2);
-  lcd.print("Alarm - 00:00");
-  Serial.begin(9600);
-
-}
-
-void loop() {
-
-  ahour01 = 6;
-  ahour10 = 0;
-  aminute01 = 6;
-  aminute10 = 4;
   String init = "Alarm - ";
 
   digits = init + ahour10 + ahour01 + ":" + aminute10 + aminute01;
   lcd.setCursor(0, 2);
   lcd.print(digits);
+  lcd.noCursor();
 
+  Serial.begin(9600);
+  setSyncProvider( requestSync);  //set function to call when sync required
+  Serial.println("Waiting for sync message");
+}
+
+void loop() {
+
+
+  String init = "Alarm - ";
   int voltage = analogRead(A0);
+
+  // enter SET ALARM mode if select button is pressed
+
   if (voltage < 620) {
     select = 1;
     lcd.cursor();
     lcd.setCursor(aminute01pos, 2);
     delay(250);
   }
-  int left = 0;
-  int right = 0;
-  int up = 0;
-  int down = 0;
+
   int pos = 12;
   while (select == 1) {
 
-    Serial.println(analogRead(A0));
-    if (analogRead(A0) > 840 && analogRead(A0) < 860) { //left button - move cursor left
+    //Serial.println(analogRead(A0));
+
+    //MOVE LEFT
+
+    if (analogRead(A0) > 845 && analogRead(A0) < 860) { //left button - move cursor left
       //pos = pos - 1;
       if (pos == 11) { //skip the colon
         pos = pos - 2;
@@ -80,6 +79,8 @@ void loop() {
       lcd.setCursor(pos, 2); //set cursor
       delay(250);
     }
+
+    //MOVE RIGHT
 
     if (analogRead(A0) > 800 && analogRead(A0) < 830) { //right button - move cursor right
       //pos = pos + 1;
@@ -96,69 +97,160 @@ void loop() {
       delay(250);
     }
 
+    //DECREASE VALUE
+
     if (analogRead(A0) > 890 && analogRead(A0) < 910) { //decrease value
       bool a = pos == aminute01pos; //check where the cursor is
       bool b = pos == aminute10pos;
       bool c = pos == ahour01pos;
-      bool d = pos == ahour10pos;
-      if (a) {
-        if (aminute01 == 0) {
-          aminute01 = 9; //cycle it back to top
-        }
-        else {
-          aminute01 = (aminute01 - 1);
-        }
 
+      if (a) {
+        aminute01 = ((aminute01 - 1) + 10) % 10; //this addition of 10 to the modulus accounts for negative numbers b/c 0 is the critical value for decreasing the digit
       }
       else if (b) {
-        if (aminute10 == 0) { //cycle it back to top
-          aminute10 = 5;
-        }
-        else {
-          aminute10 = (aminute10 - 1);
-        }
-
+        aminute10 = ((aminute10 - 1) + 6) % 6;
       }
       else if (c) {
-        if (ahour10 == 2 && ahour01 == 0) { //making it a 24 hour clock by checking what theother digit is
+        if (ahour10 == 2 && ahour01 == 0) { //making it a 24 hour clock by checking what the other digit is
           ahour01 = 3;
         }
-        else if (ahour10 != 2 && ahour01 == 0) {
-          ahour01 = 9;
-        }
         else {
-          ahour01 = ahour01 - 1;
+          ahour01 = ((ahour01 - 1) + 10) % 10;
         }
       }
       else {
-        if (ahour10 == 0) { //only part we need to fix here is that whenever the hour10 is set to 2, we should automatically set the cursor to the hour01 and change it to a reasonable value
-          ahour10 = 2;      // alternatively, just don't let the user exit the set alarm state when an unreasonable time exists - error message might be easiest
-        }
-        else {
-          ahour10 = ahour10 - 1;
-        }
+        ahour10 = ((ahour10 - 1) + 3) % 3;
       }
 
       digits = init + ahour10 + ahour01 + ":" + aminute10 + aminute01;
       lcd.setCursor(0, 2);
       lcd.print(digits);
+      lcd.noCursor();
       delay(250);
       lcd.setCursor(pos, 2);
+      lcd.cursor();
     }
+
+    //INCREASE VALUE
+    if (analogRead(A0) > 925 && analogRead(A0) < 940) {
+      bool a = pos == aminute01pos; //check where the cursor is
+      bool b = pos == aminute10pos;
+      bool c = pos == ahour01pos;
+
+      if (a) {
+        aminute01 = (aminute01 + 1) % 10;
+      }
+      else if (b) { //cycle it back to top
+        aminute10 = (aminute10 + 1) % 6;
+      }
+      else if (c) {
+        if (ahour10 == 2 && ahour01 == 3) { //making it a 24 hour clock by checking what the other digit is
+          ahour01 = 0;
+        }
+        else {
+          ahour01 = (ahour01 + 1) % 10;
+        }
+      }
+      else {
+        ahour10 = (ahour10 + 1) % 3;
+      }
+
+
+      digits = init + ahour10 + ahour01 + ":" + aminute10 + aminute01;
+      lcd.setCursor(0, 2);
+      lcd.print(digits);
+      lcd.noCursor();
+      delay(250);
+      lcd.setCursor(pos, 2);
+      lcd.cursor();
+    }
+
+
+
+
+    //GET OUT OF ALARM SET
 
     if (analogRead(A0) < 620) { //when you want to get out of the "setting alarm" stage, flash the display and get out of the while loop
-      select = 0;
-      for (int i = 0; i < 5; i++) {
-        lcd.noDisplay();
-        delay(150);
-        lcd.display();
-        delay(300);
+      if (ahour10 == 2 && ahour01 > 3) {
+        select = 1;
+        lcd.clear(); //when clearing the screen, remember to put the time back on the first line after the error message
+        lcd.setCursor(0, 2);
+        lcd.print("Invalid time!"); //error handling for putting impossible times (ex. 29:00)
+        lcd.noCursor();
+        delay(2000);
+        lcd.clear();
+        lcd.setCursor(0, 2);
+        lcd.print(digits);
+        lcd.setCursor(pos, 2);
+        lcd.cursor();
       }
+      else {
+        select = 0;
+        for (int i = 0; i < 5; i++) {
+          lcd.noDisplay();
+          delay(150);
+          lcd.display();
+          delay(300);
+        }
+        lcd.noCursor();
+      }
+
+    }
+  } //end of while loop for setting alarm
+
+
+  if (Serial.available() ) {
+    processSyncMessage();
+  }
+  if (timeStatus() != timeNotSet)   {
+    //digitalWrite(13,timeStatus() == timeSet); // on if synced, off if needs refresh
+    digitalClockDisplay();
+  }
+  delay(1000);
+}
+
+
+void digitalClockDisplay() {
+  // digital clock display of the time
+  Serial.print(hour());
+  printDigits(minute());
+  printDigits(second());
+}
+
+void printDigits(int digits) {
+  // utility function for digital clock display: prints preceding colon and leading 0
+  Serial.print(":");
+  if (digits < 10)
+    Serial.print('0');
+  Serial.print(digits);
+}
+
+void processSyncMessage() {
+  // if time sync available from serial port, update time and return true
+  while (Serial.available() >=  TIME_MSG_LEN ) { // time message consists of a header and ten ascii digits
+    char c = Serial.read() ;
+    Serial.print(c);
+    if ( c == TIME_HEADER ) {
+      time_t pctime = 0;
+      for (int i = 0; i < TIME_MSG_LEN - 1; i++) {
+        c = Serial.read();
+        if ( c >= '0' && c <= '9') {
+          pctime = (10 * pctime) + (c - '0') ; // convert digits to a number
+        }
+      }
+      setTime(pctime);   // Sync Arduino clock to the time received on the serial port
     }
   }
-
-  delay(500);
-
 }
+
+time_t requestSync()
+{
+  Serial.print(TIME_REQUEST, BYTE);
+  return 0; // the time will be sent later in response to serial mesg
+}
+
+
+
+
 
 
