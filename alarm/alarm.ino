@@ -1,0 +1,255 @@
+
+// include the library code:
+#include <LiquidCrystal.h>
+#include <Time.h>
+#include <TimeLib.h>
+
+#define TIME_MSG_LEN  11   // time sync to PC is HEADER followed by unix time_t as ten ascii digits
+#define TIME_HEADER  'T'   // Header tag for serial time sync message
+#define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
+
+
+// initialize the library with the numbers of the interface pins
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+int ahour01 = 0;
+int ahour10 = 0;
+int aminute01 = 0;
+int aminute10 = 0;
+int ahour01pos = 9;
+int ahour10pos = 8;
+int aminute01pos = 12;
+int aminute10pos = 11;
+
+int select;
+String digits;
+
+void setup() {
+  // set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+  // turn on the cursor:
+  lcd.cursor();
+  lcd.setCursor(0, 2);
+  String init = "Alarm - ";
+
+  digits = init + ahour10 + ahour01 + ":" + aminute10 + aminute01;
+  lcd.setCursor(0, 2);
+  lcd.print(digits);
+  lcd.noCursor();
+
+  Serial.begin(9600);
+  setSyncProvider( requestSync);  //set function to call when sync required
+  Serial.println("Waiting for sync message");
+}
+
+void loop() {
+
+
+  String init = "Alarm - ";
+  int voltage = analogRead(A0);
+
+  // enter SET ALARM mode if select button is pressed
+
+  if (voltage < 620) {
+    select = 1;
+    lcd.cursor();
+    lcd.setCursor(aminute01pos, 2);
+    delay(250);
+  }
+
+  int pos = 12;
+  while (select == 1) {
+
+    //Serial.println(analogRead(A0));
+
+    //MOVE LEFT
+
+    if (analogRead(A0) > 845 && analogRead(A0) < 860) { //left button - move cursor left
+      //pos = pos - 1;
+      if (pos == 11) { //skip the colon
+        pos = pos - 2;
+      }
+      else if (pos < 9) { //dont go past the hours
+        pos = 8;
+      }
+      else {
+        pos = pos - 1; //otherwise move left
+      }
+      lcd.setCursor(pos, 2); //set cursor
+      delay(250);
+    }
+
+    //MOVE RIGHT
+
+    if (analogRead(A0) > 800 && analogRead(A0) < 830) { //right button - move cursor right
+      //pos = pos + 1;
+      if (pos == 9) {
+        pos = pos + 2;
+      }
+      else if (pos > 11) {
+        pos = 12;
+      }
+      else {
+        pos = pos + 1;
+      }
+      lcd.setCursor(pos, 2);
+      delay(250);
+    }
+
+    //DECREASE VALUE
+
+    if (analogRead(A0) > 890 && analogRead(A0) < 910) { //decrease value
+      bool a = pos == aminute01pos; //check where the cursor is
+      bool b = pos == aminute10pos;
+      bool c = pos == ahour01pos;
+
+      if (a) {
+        aminute01 = ((aminute01 - 1) + 10) % 10; //this addition of 10 to the modulus accounts for negative numbers b/c 0 is the critical value for decreasing the digit
+      }
+      else if (b) {
+        aminute10 = ((aminute10 - 1) + 6) % 6;
+      }
+      else if (c) {
+        if (ahour10 == 2 && ahour01 == 0) { //making it a 24 hour clock by checking what the other digit is
+          ahour01 = 3;
+        }
+        else {
+          ahour01 = ((ahour01 - 1) + 10) % 10;
+        }
+      }
+      else {
+        ahour10 = ((ahour10 - 1) + 3) % 3;
+      }
+
+      digits = init + ahour10 + ahour01 + ":" + aminute10 + aminute01;
+      lcd.setCursor(0, 2);
+      lcd.print(digits);
+      lcd.noCursor();
+      delay(250);
+      lcd.setCursor(pos, 2);
+      lcd.cursor();
+    }
+
+    //INCREASE VALUE
+    if (analogRead(A0) > 925 && analogRead(A0) < 940) {
+      bool a = pos == aminute01pos; //check where the cursor is
+      bool b = pos == aminute10pos;
+      bool c = pos == ahour01pos;
+
+      if (a) {
+        aminute01 = (aminute01 + 1) % 10;
+      }
+      else if (b) { //cycle it back to top
+        aminute10 = (aminute10 + 1) % 6;
+      }
+      else if (c) {
+        if (ahour10 == 2 && ahour01 == 3) { //making it a 24 hour clock by checking what the other digit is
+          ahour01 = 0;
+        }
+        else {
+          ahour01 = (ahour01 + 1) % 10;
+        }
+      }
+      else {
+        ahour10 = (ahour10 + 1) % 3;
+      }
+
+
+      digits = init + ahour10 + ahour01 + ":" + aminute10 + aminute01;
+      lcd.setCursor(0, 2);
+      lcd.print(digits);
+      lcd.noCursor();
+      delay(250);
+      lcd.setCursor(pos, 2);
+      lcd.cursor();
+    }
+
+
+
+
+    //GET OUT OF ALARM SET
+
+    if (analogRead(A0) < 620) { //when you want to get out of the "setting alarm" stage, flash the display and get out of the while loop
+      if (ahour10 == 2 && ahour01 > 3) {
+        select = 1;
+        lcd.clear(); //when clearing the screen, remember to put the time back on the first line after the error message
+        lcd.setCursor(0, 2);
+        lcd.print("Invalid time!"); //error handling for putting impossible times (ex. 29:00)
+        lcd.noCursor();
+        delay(2000);
+        lcd.clear();
+        lcd.setCursor(0, 2);
+        lcd.print(digits);
+        lcd.setCursor(pos, 2);
+        lcd.cursor();
+      }
+      else {
+        select = 0;
+        for (int i = 0; i < 5; i++) {
+          lcd.noDisplay();
+          delay(150);
+          lcd.display();
+          delay(300);
+        }
+        lcd.noCursor();
+      }
+
+    }
+  } //end of while loop for setting alarm
+
+
+  if (Serial.available() ) {
+    processSyncMessage();
+  }
+  if (timeStatus() != timeNotSet)   {
+    //digitalWrite(13,timeStatus() == timeSet); // on if synced, off if needs refresh
+    digitalClockDisplay();
+  }
+  delay(1000);
+}
+
+
+void digitalClockDisplay() {
+  // digital clock display of the time
+  Serial.print(hour());
+  printDigits(minute());
+  printDigits(second());
+}
+
+void printDigits(int digits) {
+  // utility function for digital clock display: prints preceding colon and leading 0
+  Serial.print(":");
+  if (digits < 10)
+    Serial.print('0');
+  Serial.print(digits);
+}
+
+void processSyncMessage() {
+  // if time sync available from serial port, update time and return true
+  while (Serial.available() >=  TIME_MSG_LEN ) { // time message consists of a header and ten ascii digits
+    char c = Serial.read() ;
+    Serial.print(c);
+    if ( c == TIME_HEADER ) {
+      time_t pctime = 0;
+      for (int i = 0; i < TIME_MSG_LEN - 1; i++) {
+        c = Serial.read();
+        if ( c >= '0' && c <= '9') {
+          pctime = (10 * pctime) + (c - '0') ; // convert digits to a number
+        }
+      }
+      setTime(pctime);   // Sync Arduino clock to the time received on the serial port
+    }
+  }
+}
+
+time_t requestSync()
+{
+  Serial.print(TIME_REQUEST);
+  return 0; // the time will be sent later in response to serial mesg
+}
+
+
+
+
+
+
