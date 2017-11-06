@@ -23,6 +23,7 @@ int aminute10pos = 11;
 
 int select;
 String digits;
+String read_serial;
 
 void setup() {
   // set up the LCD's number of columns and rows:
@@ -38,13 +39,26 @@ void setup() {
   lcd.noCursor();
 
   Serial.begin(9600);
-  setSyncProvider( requestSync);  //set function to call when sync required
-  Serial.println("Waiting for sync message");
+  delay(500);
+  system("mkdir test_communication"); //not working, ask miller about this
 }
 
 void loop() {
 
 
+  if (Serial.available() > 0) {
+    // read the incoming string
+    read_serial = Serial.readString();
+    if (read_serial.length() > 13) { //make sure multiple strings don't print when the clock is paused for setting the alarm
+      read_serial = read_serial.substring(0, 12) ;
+    }
+
+    //lcd.print("");
+    lcd.cursor();
+    lcd.home();
+    lcd.print(read_serial);
+    lcd.noCursor();
+  }
   String init = "Alarm - ";
   int voltage = analogRead(A0);
 
@@ -64,7 +78,7 @@ void loop() {
 
     //MOVE LEFT
 
-    if (analogRead(A0) > 845 && analogRead(A0) < 860) { //left button - move cursor left
+    if (analogRead(A0) > 850 && analogRead(A0) < 860) { //left button - move cursor left
       //pos = pos - 1;
       if (pos == 11) { //skip the colon
         pos = pos - 2;
@@ -98,7 +112,7 @@ void loop() {
 
     //DECREASE VALUE
 
-    if (analogRead(A0) > 890 && analogRead(A0) < 910) { //decrease value
+    if (analogRead(A0) > 900 && analogRead(A0) < 905) { //decrease value
       bool a = pos == aminute01pos; //check where the cursor is
       bool b = pos == aminute10pos;
       bool c = pos == ahour01pos;
@@ -131,7 +145,7 @@ void loop() {
     }
 
     //INCREASE VALUE
-    if (analogRead(A0) > 925 && analogRead(A0) < 940) {
+    if (analogRead(A0) > 927 && analogRead(A0) < 931) {
       bool a = pos == aminute01pos; //check where the cursor is
       bool b = pos == aminute10pos;
       bool c = pos == ahour01pos;
@@ -185,69 +199,37 @@ void loop() {
       }
       else {
         select = 0;
+        // flash the display to show that the alarm is set
         for (int i = 0; i < 5; i++) {
           lcd.noDisplay();
           delay(150);
           lcd.display();
           delay(300);
         }
-        lcd.noCursor();
+        lcd.noCursor(); //get rid of cursor because alarm setting is complete
       }
 
     }
   } //end of while loop for setting alarm
 
-
-  if (Serial.available() ) {
-    processSyncMessage();
-  }
-  if (timeStatus() != timeNotSet)   {
-    //digitalWrite(13,timeStatus() == timeSet); // on if synced, off if needs refresh
-    digitalClockDisplay();
-  }
-  delay(1000);
-}
-
-
-void digitalClockDisplay() {
-  // digital clock display of the time
-  Serial.print(hour());
-  printDigits(minute());
-  printDigits(second());
-}
-
-void printDigits(int digits) {
-  // utility function for digital clock display: prints preceding colon and leading 0
-  Serial.print(":");
-  if (digits < 10)
-    Serial.print('0');
-  Serial.print(digits);
-}
-
-void processSyncMessage() {
-  // if time sync available from serial port, update time and return true
-  while (Serial.available() >=  TIME_MSG_LEN ) { // time message consists of a header and ten ascii digits
-    char c = Serial.read() ;
-    Serial.print(c);
-    if ( c == TIME_HEADER ) {
-      time_t pctime = 0;
-      for (int i = 0; i < TIME_MSG_LEN - 1; i++) {
-        c = Serial.read();
-        if ( c >= '0' && c <= '9') {
-          pctime = (10 * pctime) + (c - '0') ; // convert digits to a number
-        }
-      }
-      setTime(pctime);   // Sync Arduino clock to the time received on the serial port
+  String alarmtime = digits.substring(8, 13);
+  String clocktime = read_serial.substring(8, 13);
+  bool match = alarmtime==clocktime;
+  Serial.println(match);
+  Serial.println(alarmtime);
+  Serial.println(clocktime);
+  if (match) {
+    for (int i = 0; i < 3; i++) {
+      lcd.noDisplay();
+      delay(50);
+      lcd.display();
+      delay(50);
     }
-  }
-}
 
-time_t requestSync()
-{
-  Serial.print(TIME_REQUEST);
-  return 0; // the time will be sent later in response to serial mesg
-}
+ }
 
+
+}
 
 
 
