@@ -20,6 +20,7 @@ int ahour01pos = 9;
 int ahour10pos = 8;
 int aminute01pos = 12;
 int aminute10pos = 11;
+int alarm = 0;
 
 int select;
 String digits;
@@ -215,21 +216,32 @@ void loop() {
   String alarmtime = digits.substring(8, 13);
   String clocktime = read_serial.substring(8, 13);
   bool match = alarmtime==clocktime;
-  Serial.println(match);
-  Serial.println(alarmtime);
-  Serial.println(clocktime);
-  if (match) {
+  
+//  Serial.println(match);
+//  Serial.println(alarmtime);
+//  Serial.println(clocktime);
+  while (match) {
+    Serial.println("y");
+      
     for (int i = 0; i < 3; i++) {
       lcd.noDisplay();
       delay(50);
       lcd.display();
       delay(50);
     }
+    delay(200);
+    if (analogRead(A0) > 850 && analogRead(A0) < 860) { //left button - turn off alarm
+      
+      for (int i = 0; i < 5; i++) {
+      Serial.println("n");
+      }
+      //delay(60000);
+      match = 0;
+ }
+}
 
  }
 
-
-}
 
 
 

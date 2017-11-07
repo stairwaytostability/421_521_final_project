@@ -5,8 +5,8 @@ import serial
 import time
 import datetime
 
-ser = serial.Serial('/dev/ttyACM0',9600)
-
+ser = serial.Serial('/dev/ttyACM1',9600)
+alarmOn = 0
 
 while True:
 	t = datetime.datetime.now().time()
@@ -23,5 +23,14 @@ while True:
 
 	time_now = 'Clock - ' + thour + ':' + tminute
 	ser.write(time_now)
-	print time_now
+	#print time_now
 	time.sleep(2)
+	
+	if ser.inWaiting():
+		match = ser.read() 
+		if match =='y':
+			alarmOn = 1
+		else:
+			alarmOn = 0
+	print alarmOn	
+	
