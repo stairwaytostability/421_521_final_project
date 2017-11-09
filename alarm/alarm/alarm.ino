@@ -1,4 +1,3 @@
-
 // include the library code:
 #include <LiquidCrystal.h>
 #include <Time.h>
@@ -241,9 +240,3 @@ void loop() {
 }
 
  }
-
-
-
-
-
-
