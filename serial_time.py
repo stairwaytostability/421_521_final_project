@@ -24,13 +24,14 @@ while True:
 	time_now = 'Clock - ' + thour + ':' + tminute
 	ser.write(time_now)
 	#print time_now
+	ser.flushInput()
 	time.sleep(2)
 	
 	if ser.inWaiting():
 		match = ser.read() 
 		if match =='y':
 			alarmOn = 1
-		if match =='n':
+		if match =='k':
 			alarmOn = 0
 	print alarmOn	
-	
+

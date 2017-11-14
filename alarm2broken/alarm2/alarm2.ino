@@ -24,8 +24,10 @@ int alarm = 0;
 
 int select;
 String digits;
+bool match;
 String read_serial;
 String read_serialNew;
+bool alarmOff = 0;
 
 void setup() {
   // set up the LCD's number of columns and rows:
@@ -63,12 +65,12 @@ void loop() {
     if (read_serialNew.substring(8, 13) != read_serial.substring(8, 13)) {
       String alarmtime = digits.substring(8, 13);
       String clocktime = read_serialNew.substring(8, 13);
-      bool match = alarmtime == clocktime;
+      match = alarmtime == clocktime;
 
       //  Serial.println(match);
       //  Serial.println(alarmtime);
       //  Serial.println(clocktime);
-      while (match) {
+      while (match && !alarmOff) {
         Serial.println("y");
         for (int i = 0; i < 3; i++) {
           lcd.noDisplay();
@@ -77,15 +79,19 @@ void loop() {
           delay(50);
         }
         if (analogRead(A0) > 850 && analogRead(A0) < 860) { //left button - turn off alarm
-          for (int i = 0; i < 5; i++) {
-            Serial.println("n");
-          }
+        
+        Serial.println("k");
+            delay(100);
+            alarmOff = 1;
+            
+          
           break;
           
         }
           //match = 0;
      
         }
+        
       }
 
     read_serial = read_serialNew;
@@ -115,7 +121,7 @@ void loop() {
 
   int pos = 12;
   while (select == 1) {
-
+    alarmOff = 0;
     //Serial.println(analogRead(A0));
 
     //MOVE LEFT
@@ -252,9 +258,11 @@ void loop() {
       }
 
     }
-  } //end of while loop for setting alarm
+  } //end of while loop for setting alarm 
+}
 
-  //  String alarmtime = digits.substring(8, 13);
+
+//  String alarmtime = digits.substring(8, 13);
   //  String clocktime = read_serial.substring(8, 13);
   //  bool match = alarmtime==clocktime;
   //
@@ -282,10 +290,6 @@ void loop() {
   //      match = 0;
   // }
   //}
-
-}
-
-
 
 
 
