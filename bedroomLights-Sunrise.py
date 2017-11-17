@@ -15,7 +15,7 @@ def my_range(start, end, step):
 #     print x
 
 
-execfile("/home/pi/lights/nmap-equipment.py")
+execfile("/home/pi/421_521_final_project/nmap-equipment.py")
 
 
 # CHOOSE WHICH LIGHTS TO USE HERE - this comes from the nmap file execution
@@ -39,7 +39,7 @@ print "Which gives us a " + str(delay*numSteps) + " second wakeup" #how long the
 if delay == 0: #because int is a floor function and could be 0
     delay = 0.5
 
-theCommand = "/usr/local/bin/flux_led " + theLightsString + " --off" #all the ip addresses, turn the lights off?
+theCommand = "/usr/local/bin/flux_ led " + theLightsString + " --off" #all the ip addresses, turn the lights off?
 print theCommand
 os.system(theCommand) #is this what runs the command? the OS? is it running on command line?
 time.sleep(5)

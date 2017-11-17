@@ -28,7 +28,7 @@ print formattedDatetime
 
 
 # FILENAME
-resultsFilename = "/home/pi/lights/nmap-results.txt"
+resultsFilename = "/home/pi/421_521_final_project/nmap-results.txt"
 
 
 # theCommand = "/bin/echo '" + formattedDatetime + "' > " + resultsFilename

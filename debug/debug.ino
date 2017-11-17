@@ -19,7 +19,7 @@ void loop() {
 
   if (analogRead(A0) > 850 && analogRead(A0) < 860) { //left button - turn off alarm
      // alarmOff = 1;
-      Serial.println("n");
+      Serial.println("k");
   }
 
   delay(200);

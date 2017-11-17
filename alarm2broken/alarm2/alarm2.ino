@@ -43,14 +43,11 @@ void setup() {
   lcd.noCursor();
 
   Serial.begin(9600);
-  delay(500);
-  system("mkdir test_communication"); //not working, ask miller about this
-
+//delay(500);
   read_serial = Serial.readString();
 }
 
 void loop() {
-
 
   if (Serial.available() > 0) {
     // read the incoming string
@@ -59,17 +56,11 @@ void loop() {
       read_serialNew = read_serialNew.substring(0, 12) ;
     }
 
-//String lastdig = read_serial.substring(13);
-//String lastdigNew = read_serialNew.substring(13);
-
     if (read_serialNew.substring(8, 13) != read_serial.substring(8, 13)) {
       String alarmtime = digits.substring(8, 13);
       String clocktime = read_serialNew.substring(8, 13);
       match = alarmtime == clocktime;
 
-      //  Serial.println(match);
-      //  Serial.println(alarmtime);
-      //  Serial.println(clocktime);
       while (match && !alarmOff) {
         Serial.println("y");
         for (int i = 0; i < 3; i++) {
@@ -79,27 +70,16 @@ void loop() {
           delay(50);
         }
         if (analogRead(A0) > 850 && analogRead(A0) < 860) { //left button - turn off alarm
-        
-        Serial.println("k");
-            delay(100);
-            alarmOff = 1;
-            
-          
+          Serial.println("k");
+          alarmOff = 1;
           break;
-          
+
         }
-          //match = 0;
-     
-        }
-        
       }
-
+    }
     read_serial = read_serialNew;
-    
-
   }
 
-  //lcd.print("");
   lcd.cursor();
   lcd.home();
   lcd.print(read_serial);
@@ -107,7 +87,6 @@ void loop() {
 
   String init = "Alarm - ";
   int voltage = analogRead(A0);
-
 
 
   // enter SET ALARM mode if select button is pressed
@@ -122,7 +101,6 @@ void loop() {
   int pos = 12;
   while (select == 1) {
     alarmOff = 0;
-    //Serial.println(analogRead(A0));
 
     //MOVE LEFT
 
@@ -215,8 +193,6 @@ void loop() {
       else {
         ahour10 = (ahour10 + 1) % 3;
       }
-
-
       digits = init + ahour10 + ahour01 + ":" + aminute10 + aminute01;
       lcd.setCursor(0, 2);
       lcd.print(digits);
@@ -225,9 +201,6 @@ void loop() {
       lcd.setCursor(pos, 2);
       lcd.cursor();
     }
-
-
-
 
     //GET OUT OF ALARM SET
 
@@ -258,38 +231,8 @@ void loop() {
       }
 
     }
-  } //end of while loop for setting alarm 
+  } //end of while loop for setting alarm
 }
-
-
-//  String alarmtime = digits.substring(8, 13);
-  //  String clocktime = read_serial.substring(8, 13);
-  //  bool match = alarmtime==clocktime;
-  //
-  ////  Serial.println(match);
-  ////  Serial.println(alarmtime);
-  ////  Serial.println(clocktime);
-  //  while (match) {
-  //
-  //   for (int i = 0; i < 5; i++) {
-  //    Serial.println("y");
-  //   }
-  //    for (int i = 0; i < 3; i++) {
-  //      lcd.noDisplay();
-  //      delay(50);
-  //      lcd.display();
-  //      delay(50);
-  //    }
-  //    //delay(60000);
-  //    if (analogRead(A0) > 850 && analogRead(A0) < 860) { //left button - turn off alarm
-  //
-  //      for (int i = 0; i < 5; i++) {
-  //      Serial.println("n");
-  //      }
-  //      //delay(60000);
-  //      match = 0;
-  // }
-  //}
 
 
 
