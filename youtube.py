@@ -2,4 +2,4 @@
 
 import sys, os
 
-os.system("sudo youtube https://www.youtube.com/watch?v=EUvbrY_ec60")
+os.system("sudo youtube https://www.youtube.com/watch?v=NanqJFJ3YLE")
