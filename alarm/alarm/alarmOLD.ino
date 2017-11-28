@@ -1,3 +1,9 @@
+/* This was our original Arduino code - however all of the currently used code is located in alarm2
+
+
+
+
+
 // include the library code:
 #include <LiquidCrystal.h>
 #include <Time.h>
@@ -240,3 +246,7 @@ void loop() {
 }
 
  }
+ 
+ 
+ 
+ */
