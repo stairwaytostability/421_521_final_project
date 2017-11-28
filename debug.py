@@ -1,3 +1,5 @@
+#debug code used for our serial communication from arduino to raspberry pi
+
 #!/usr/bin/python
 
 import sys,os
